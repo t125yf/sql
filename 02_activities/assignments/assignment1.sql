@@ -134,11 +134,11 @@ When inserting the new vendor, you need to appropriately align the columns to be
 -> To insert the new row use VALUES, specifying the value you want for each column:
 VALUES(col1,col2,col3,col4,col5) 
 */
-
-CREATE TEMP TABLE temp.new_vendor AS
-SELECT *
-FROM vendor;
-
+-- aux query
+DROP TABLE IF EXISTS temp.new_vendor;
+-- main query 1
+CREATE TEMP TABLE IF NOT EXISTS temp.new_vendor AS
+	SELECT * FROM vendor;
 -- 2. Insert the new 10th vendor
 INSERT INTO temp.new_vendor (vendor_id, vendor_name, vendor_type, vendor_owner_first_name, vendor_owner_last_name)
 VALUES (10, 'Thomass Superfood Store', 'Fresh Focused', 'Thomas', 'Rosenthal');
