@@ -106,7 +106,9 @@ from product
 
 /* 2. Filter the query to show any product_size value that contain a number with REGEXP. */
 
-
+SELECT product_name, product_size
+from product
+WHERE product_size REGEXP('[0-9]')
 
 -- UNION
 /* 1. Using a UNION, write a query that displays the market dates with the highest and lowest total sales.
@@ -155,7 +157,30 @@ Think a bit about the row counts: how many distinct vendors, product names are t
 How many customers are there (y). 
 Before your final group by you should have the product of those two queries (x*y).  */
 
+drop table if exists temp.Product_Unique_Info;
+create temp table temp.Product_Unique_Info as
+	SELECT vendor_id as target_vendor_id,product_id as target_product_id,(5*original_price) as sold_price_per_customer
+	FROM vendor_inventory
+	where market_date = (select MAX(market_date) from vendor_inventory where product_id=target_product_id and vendor_id=target_vendor_id);
 
+drop table if EXISTS temp.Sell_Unique_Info;
+create temp table temp.Sell_Unique_Info as 
+	select target_vendor_id,target_product_id, sold_price_per_customer,target_customer_id.customer_id from temp.Product_Unique_Info
+	cross join (select customer_id from customer) as target_customer_id;
+
+SELECT 
+	target_vendor_id, v.vendor_name,
+	target_product_id, p.product_name,
+    SUM(s.sold_price_per_customer) AS money_per_product
+FROM 
+    temp.Sell_Unique_Info s
+INNER JOIN 
+    vendor v ON s.target_vendor_id = v.vendor_id
+INNER JOIN 
+    product p ON s.target_product_id = p.product_id
+GROUP BY 
+    v.vendor_name, p.product_name
+ORDER BY target_vendor_id, target_product_id;
 
 -- INSERT
 /*1.  Create a new table "product_units". 
